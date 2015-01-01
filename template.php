@@ -33,7 +33,7 @@ namespace peanut {
         public function assign($key, $value = FALSE)
         {
 
-            if (is_array($key))
+            if (TRUE === is_array($key))
             {
                 $this->var_ = array_merge($this->var_, $key);
             }
@@ -47,7 +47,7 @@ namespace peanut {
         public function define($fid, $path = FALSE)
         {
 
-            if(is_array($fid))
+            if(TRUE === is_array($fid))
             {
                 foreach ($fid as $subFid => $subPath)
                 {
@@ -71,7 +71,7 @@ namespace peanut {
         public function show($fid, $print = FALSE)
         {
 
-            if ($print === TRUE)
+            if (TRUE === $print)
             {
                 $this->render($fid);
             }
@@ -98,7 +98,7 @@ namespace peanut {
         {
 
             // define 되어있으나 값이 없을때
-            if(isset($this->tpl_[$fid]) && !$this->tpl_[$fid])
+            if(TRUE === isset($this->tpl_[$fid]) && !$this->tpl_[$fid])
             {
                 return;
             }

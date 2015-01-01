@@ -7,7 +7,7 @@ class compiler
     private $brace      = [];
     private $loopkey    = 'A';
     private $permission = 0777;
-    private $phpengine  = false;
+    private $phpengine  = FALSE;
 
     public function __construct() {
         $functions          = get_defined_functions();
@@ -30,17 +30,17 @@ class compiler
             $dirs = explode('/', $cpl_path);
 
             $path = '';
-            $once_checked = false;
+            $once_checked = FALSE;
 
             for ($i=0, $s = count($dirs)-1; $i<$s; $i++)
             {
 
                 $path .= $dirs[$i].'/';
 
-                if ($once_checked or !is_dir($path) and $once_checked=true)
+                if ($once_checked or !is_dir($path) and $once_checked=TRUE)
                 {
 
-                    if (false === mkdir($path))
+                    if (FALSE === mkdir($path))
                     {
                         throw new compiler\exception('cannot create compile directory <b>'.$path.'</b>');
                     }
@@ -58,7 +58,7 @@ class compiler
             fclose($fp_tpl);
         }
 
-        $gt_than_or_eq_to_5_4 = defined('PHP_MAJOR_VERSION') and 5.4 <= (float)(PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION);
+        $gt_than_or_eq_to_5_4 = defined('PHP_MAJOR_VERSION') and  5.4 <= (float)(PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION);
         $php_tag = '<\?php|(?<!`)\?>';
         if (ini_get('short_open_tag')) $php_tag .= '|<\?(?!`)';
         elseif ($gt_than_or_eq_to_5_4) $php_tag .= '|<\?=';
@@ -75,6 +75,8 @@ class compiler
             $handlebars[$i] = $matches[0];
             return '###2413###'.$i.'###2413###';
         }, $source);
+//pr($source);
+
 
         $tokens=preg_split('/('.$php_tag.'<!--{{(?!`)|(?<!`)}}-->|{{(?!`)|(?<!`)}})/i', $source, -1, PREG_SPLIT_DELIM_CAPTURE);
 
@@ -169,7 +171,7 @@ class compiler
         $source = $cpl_head.str_pad($source_size, 9, '0', STR_PAD_LEFT).$init_code.$source;
 
         $fp_cpl=fopen($cpl_path, 'wb');
-        if (false===$fp_cpl)
+        if (FALSE===$fp_cpl)
         {
             throw new compiler\exception('cannot write compiled file "<b>'.$cpl_path.'</b>"');
         }
@@ -383,7 +385,8 @@ class compiler
             |(?P<array_keyword>array)
             |(?P<assoc_array>=\>)
             |(?P<object_sign>-\>)
-            |(?P<static_object_sign>::|\\\)
+            |(?P<namespace_sigh>\\\)
+            |(?P<static_object_sign>::)
             |(?P<compare>===|!==|<<|>>|<=|>=|==|!=|&&|\|\|\<|\>)
             |(?P<assign>\=)
             |(?P<string_concat>\.)
@@ -437,7 +440,7 @@ class compiler
         foreach($token as $key => &$current)
         {
             $current['key'] = $key;
-            if(isset($token[$key-1]))
+            if(TRUE === isset($token[$key-1]))
             {
                 $prev = $token[$key-1];
             }
@@ -447,7 +450,7 @@ class compiler
             }
             $org .= $current['org'];
 
-            if(isset($token[$key+1]))
+            if(TRUE === isset($token[$key+1]))
             {
                 $next = $token[$key+1];
             }
@@ -455,7 +458,7 @@ class compiler
             {
                 $next = ['org' => '', 'name' => '', 'value' => ''];
                 // 마지막이 종결되지 않음
-                if(!$next['name'] && !in_array($current['name'], ['string','number','string_number', 'right_bracket', 'right_parenthesis','double_operator','quote']))
+                if(!$next['name'] && FALSE === in_array($current['name'], ['string','number','string_number', 'right_bracket', 'right_parenthesis','double_operator','quote']))
                 {
                     throw new compiler\exception('parse error : line '.$line.' '.$current['org']);
                 }
@@ -464,14 +467,14 @@ class compiler
             switch($current['name'])
             {
                 case 'string' :
-                    if(!in_array($prev['name'], ['', 'left_parenthesis','left_bracket','assign','object_sign','static_object_sign','double_operator','operator','assoc_array', 'compare','quote_number_concat', 'assign', 'string_concat','comma']))
+                    if(FALSE === in_array($prev['name'], ['', 'left_parenthesis','left_bracket','assign','object_sign','static_object_sign','namespace_sigh','double_operator','operator','assoc_array', 'compare','quote_number_concat', 'assign', 'string_concat','comma']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     else
                     {
                         // 클로저를 허용하지 않음. 그래서 string_concat 비교 보다 우선순위가 높음
-                        if(in_array($next['name'], ['left_parenthesis','static_object_sign']))
+                        if(TRUE === in_array($next['name'], ['left_parenthesis','static_object_sign','namespace_sigh']))
                         {
                             if($prev['name'] == 'string_concat')
                             {
@@ -498,13 +501,17 @@ class compiler
                         {
                             $xpr .= '$'.$current['value'];
                         }
+                        else if($prev['name'] == 'namespace_sigh')
+                        {
+                            $xpr .= $current['value'];
+                        }
                         else if($prev['name'] == 'string_concat')
                         {
                             $xpr .= '[\''.$current['value'].'\']';
                         }
                         else
                         {
-                            if(in_array($current['value'], ['true','false','null']))
+                            if(TRUE === in_array($current['value'], ['true','false','null']))
                             {
                                 $xpr .= $current['value'];
                             }
@@ -532,14 +539,14 @@ class compiler
                     $last_stat = array_pop($stat);
                     if($last_stat
                         && $last_stat['key'] > 0
-                        && in_array($token[$last_stat['key']-1]['name'],[ 'string'])
+                        && TRUE === in_array($token[$last_stat['key']-1]['name'],[ 'string'])
                     )
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     $stat[] = $last_stat;
 
-                    if(!in_array($prev['name'], ['number', 'string', 'quote','right_parenthesis', 'right_bracket']))
+                    if(FALSE === in_array($prev['name'], ['number', 'string', 'quote','right_parenthesis', 'right_bracket']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -549,7 +556,7 @@ class compiler
                     }
                     break;
                 case 'quote' :
-                    if(!in_array($prev['name'], ['','left_parenthesis', 'left_bracket','comma','compare','assoc_array','operator','quote_number_concat']))
+                    if(FALSE === in_array($prev['name'], ['','left_parenthesis', 'left_bracket','comma','compare','assoc_array','operator','quote_number_concat']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -567,14 +574,14 @@ class compiler
                     else if($last_stat
                         && $last_stat['key']>1
                         && $prev['name'] == 'assoc_array'
-                        && !in_array($token[$last_stat['key']-1]['name'],[ 'left_bracket'])
+                        && FALSE === in_array($token[$last_stat['key']-1]['name'],[ 'left_bracket'])
                     )
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     $stat[] = $last_stat;
 
-                    if(!in_array($prev['name'], ['','left_bracket','left_parenthesis', 'comma', 'compare', 'operator', 'assign','assoc_array','string', 'right_bracket','number_concat','string_concat','quote_number_concat'])) {
+                    if(FALSE === in_array($prev['name'], ['','left_bracket','left_parenthesis', 'comma', 'compare', 'operator', 'assign','assoc_array','string', 'right_bracket','number_concat','string_concat','quote_number_concat'])) {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     else
@@ -584,7 +591,7 @@ class compiler
                             $xpr .= "'".$current['value']."'" ;
                             $current['name'] = 'quote';
                         }
-                        else if(in_array($prev['name'], ['string','right_bracket','number_concat']))
+                        else if(TRUE === in_array($prev['name'], ['string','right_bracket','number_concat']))
                         {
                             $xpr .= '['.$current['value'].']';
                         }
@@ -595,7 +602,7 @@ class compiler
                     }
                     break;
                 case 'string_number' :
-                    if(!in_array($prev['name'], ['right_bracket','number_concat']))
+                    if(FALSE === in_array($prev['name'], ['right_bracket','number_concat']))
                     {//'string',
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -605,7 +612,7 @@ class compiler
                     }
                     break;
                 case 'number_concat' :
-                    if(!in_array($prev['name'], ['string', 'string_number','right_bracket']))
+                    if(FALSE === in_array($prev['name'], ['string', 'string_number','right_bracket']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -614,7 +621,7 @@ class compiler
                     }
                     break;
                 case 'double_operator' :
-                    if(!in_array($prev['name'], ['string','number','string_number','assign']))
+                    if(FALSE === in_array($prev['name'], ['string','number','string_number','assign']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -624,7 +631,17 @@ class compiler
                     }
                     break;
                 case 'object_sign' :
-                    if(!in_array($prev['name'], ['string','right_parenthesis']))
+                    if(FALSE === in_array($prev['name'], ['string','right_parenthesis']))
+                    {
+                        throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
+                    }
+                    else
+                    {
+                        $xpr .= $current['value'] ;
+                    }
+                    break;
+                case 'namespace_sigh' :
+                    if(FALSE === in_array($prev['name'], ['string','assign','']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -634,7 +651,7 @@ class compiler
                     }
                     break;
                 case 'static_object_sign' :
-                    if(!in_array($prev['name'], ['string','']))
+                    if(FALSE === in_array($prev['name'], ['string','']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -644,7 +661,7 @@ class compiler
                     }
                     break;
                 case 'operator' :
-                    if(!in_array($prev['name'], ['','right_parenthesis','right_bracket', 'number', 'string', 'string_number', 'quote', 'assign']))
+                    if(FALSE === in_array($prev['name'], ['','right_parenthesis','right_bracket', 'number', 'string', 'string_number', 'quote', 'assign']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -663,7 +680,7 @@ class compiler
                     }
                     break;
                 case 'compare' :
-                    if(!in_array($prev['name'], ['number', 'string', 'string_number', 'assign', 'left_parenthesis', 'left_bracket','quote', 'right_parenthesis']))
+                    if(FALSE === in_array($prev['name'], ['number', 'string', 'string_number', 'assign', 'left_parenthesis', 'left_bracket','quote', 'right_parenthesis']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -680,14 +697,14 @@ class compiler
                         // $test = $ret = ... 와 같이 여러 변수를 사용하지 못하는 제약 조건
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
-                    else if(!in_array($prev['name'], ['right_bracket','string', 'operator']))
+                    else if(FALSE === in_array($prev['name'], ['right_bracket','string', 'operator']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     else
                     {
                         // = 앞에는 일부의 연산자만 허용된다. +=, -=...
-                        if($prev['name'] == 'operator' && !in_array($prev['value'], ['+','-', '*', '/', '%','^', '!']))
+                        if($prev['name'] == 'operator' && FALSE === in_array($prev['value'], ['+','-', '*', '/', '%','^', '!']))
                         {
                             throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                         }
@@ -696,7 +713,7 @@ class compiler
                     break;
                 case 'left_bracket' :
                     $stat[] = $current;
-                    if(!in_array($prev['name'], ['', 'assign','left_bracket','right_bracket', 'comma','left_parenthesis','string','string_number']))
+                    if(FALSE === in_array($prev['name'], ['', 'assign','left_bracket','right_bracket', 'comma','left_parenthesis','string','string_number']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -711,7 +728,7 @@ class compiler
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
-                    if(!in_array($prev['name'], ['quote', 'left_bracket','right_parenthesis', 'string', 'number','string_number', 'right_bracket']))
+                    if(FALSE === in_array($prev['name'], ['quote', 'left_bracket','right_parenthesis', 'string', 'number','string_number', 'right_bracket']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -721,7 +738,7 @@ class compiler
                     }
                     break;
                 case 'array_keyword' :
-                    if(!in_array($prev['name'], ['','compare', 'operator','left_parenthesis','left_bracket','comma','assign']))
+                    if(FALSE === in_array($prev['name'], ['','compare', 'operator','left_parenthesis','left_bracket','comma','assign']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -732,7 +749,7 @@ class compiler
                     break;
                 case 'left_parenthesis' :
                     $stat[] = $current;
-                    if(!in_array($prev['name'], ['','quote_number_concat', 'operator','compare','assoc_array','left_parenthesis','left_bracket','array_keyword', 'string','assign']))
+                    if(FALSE === in_array($prev['name'], ['','quote_number_concat', 'operator','compare','assoc_array','left_parenthesis','left_bracket','array_keyword', 'string','assign']))
                     {//, 'string_number' ->d.3.a() -> ->d[3]['a']() 제외
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -747,7 +764,7 @@ class compiler
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
-                    if(!in_array($prev['name'], ['left_parenthesis','right_bracket','right_parenthesis','string', 'number','string_number','quote']))
+                    if(FALSE === in_array($prev['name'], ['left_parenthesis','right_bracket','right_parenthesis','string', 'number','string_number','quote']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
@@ -768,12 +785,12 @@ class compiler
                         }
                     }
                     // 배열이나 인자 속이 아니면 오류
-                    if(!in_array($last_stat['name'], ['left_parenthesis', 'left_bracket']))
+                    if(FALSE === in_array($last_stat['name'], ['left_parenthesis', 'left_bracket']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
                     $stat[] = $last_stat;
-                    if(!in_array($prev['name'], ['quote', 'string', 'number','string_number', 'right_parenthesis', 'right_bracket']))
+                    if(FALSE === in_array($prev['name'], ['quote', 'string', 'number','string_number', 'right_parenthesis', 'right_bracket']))
                     {
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     }
