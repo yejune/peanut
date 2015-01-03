@@ -13,6 +13,7 @@ namespace peanut {
 
     class template
     {
+
         public $compile_check=true;
         public $tpl_; // = [];
         public $var_; // = [];
@@ -178,7 +179,7 @@ namespace peanut {
             {
                 throw new template\exception($fid . "이(가) 정의되어있지 않음");
             }
-            if (substr($path, 0, 1) != "/")
+            if (FALSE === isset($this->relativePath[$fid]))
             {
                 $skinFolder = trim($this->skin, "/");
 
