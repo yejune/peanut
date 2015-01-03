@@ -77,12 +77,12 @@ namespace peanut {
             }
             else
             {
-                return $this->fetched($fid);
+                return $this->fetch($fid);
             }
 
         }
 
-        public function fetched($fid)
+        public function fetch($fid)
         {
 
             ob_start();
