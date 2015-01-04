@@ -116,14 +116,14 @@ namespace peanut {
             $tplPath = $this->tplPath($fid);
             $cplPath = $this->cplPath($fid);
 
-            if (!$this->compile_check)
+            if (FALSE === $this->compile_check)
             {
                 return $cplPath;
             }
 
             if (@!is_file($tplPath))
             {
-                throw new template\exception('cannot find defined template <b>'.$tplPath.'</b>');
+                trigger_error('cannot find defined template "'.$tplPath.'"', E_USER_ERROR);
             }
 
             $cpl_head = '<?php /* vendor\view\template '.date('Y/m/d H:i:s', filemtime($tplPath)).' '.$tplPath.' ';
@@ -177,7 +177,7 @@ namespace peanut {
             }
             else
             {
-                throw new template\exception($fid . "이(가) 정의되어있지 않음");
+                trigger_error('template id "'.$fid.'" is not defined', E_USER_ERROR);
             }
             if (FALSE === isset($this->relativePath[$fid]))
             {
@@ -197,7 +197,7 @@ namespace peanut {
             }
             if (FALSE === is_file($tplPath))
             {
-                throw new template\exception($fid . " 템플릿 파일이 없음 : " . $path);
+                trigger_error('cannot find defined template "'.$path.'"', E_USER_ERROR);
             }
             return $this->tpl_[$fid] = $tplPath;
         }
