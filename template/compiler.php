@@ -292,7 +292,7 @@ class compiler
 
         if(isset($tokenizer[0]) == FALSE || isset($tokenizer[1]) == FALSE)
         {
-            throw new compiler\exception('Parse error: syntax error, loop는 {{@row = array}}...{{/?}} 로 사용해주세요. line '.$line);
+            throw new compiler\exception('Parse error: syntax error, loop는 {{@row = array}}...{{/}} 로 사용해주세요. line '.$line);
         }
         list($loop, $array) = $tokenizer;
 
@@ -387,7 +387,7 @@ class compiler
             |(?P<object_sign>-\>)
             |(?P<namespace_sigh>\\\)
             |(?P<static_object_sign>::)
-            |(?P<compare>===|!==|<<|>>|<=|>=|==|!=|&&|\|\|\<|\>)
+            |(?P<compare>===|!==|<<|>>|<=|>=|==|!=|&&|\|\||<|>)
             |(?P<assign>\=)
             |(?P<string_concat>\.)
             |(?P<left_parenthesis>\()
@@ -457,11 +457,13 @@ class compiler
             else
             {
                 $next = ['org' => '', 'name' => '', 'value' => ''];
-                // 마지막이 종결되지 않음
-                if(!$next['name'] && FALSE === in_array($current['name'], ['string','number','string_number', 'right_bracket', 'right_parenthesis','double_operator','quote']))
-                {
-                    throw new compiler\exception('parse error : line '.$line.' '.$current['org']);
-                }
+            }
+
+            // 마지막이 종결되지 않음
+            if(!$next['name'] && FALSE === in_array($current['name'], ['string','number','string_number', 'right_bracket', 'right_parenthesis','double_operator','quote']))
+            {
+                pr($current);
+                throw new compiler\exception('parse error : line '.$line.' '.$current['org']);
             }
 
             switch($current['name'])
