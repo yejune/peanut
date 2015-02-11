@@ -302,7 +302,7 @@ class compiler
         $loopIndexName  = '$_i'.$loopKey;
         $loopSizeName   = '$_s'.$loopKey;
         $loopKeyName    = '$_k'.$loopKey;
-        $loop_ValueName  = '$_j'.$loopKey;
+        $loop_ValueName = '$_j'.$loopKey;
 
         return
             $loopArrayName.'='.$array.';'
