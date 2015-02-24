@@ -513,7 +513,7 @@ class compiler
                         }
                         else
                         {
-                            if(TRUE === in_array($current['value'], ['true','false','null']))
+                            if(TRUE === in_array($current['value'], ['true','false','null', 'TRUE','FALSE','NULL']))
                             {
                                 $xpr .= $current['value'];
                             }
