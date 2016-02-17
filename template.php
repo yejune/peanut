@@ -162,7 +162,7 @@ namespace peanut {
         public function cplPath($fid)
         {
 
-            return $this->compile_root.DIRECTORY_SEPARATOR.$this->relativePath[$fid];
+            return $this->compile_root.DIRECTORY_SEPARATOR.ltrim($this->relativePath[$fid],'/');
 
         }
 
